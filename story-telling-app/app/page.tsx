@@ -6,12 +6,12 @@ import { useChat } from "ai/react";
 export default function Chat() {
   const { messages, append, isLoading } = useChat();
 
-  const characters = [
-    { emoji: "🧙", value: "Fantasy" },
-    { emoji: "🕵️", value: "Mystery" },
-    { emoji: "💑", value: "Romance" },
-    { emoji: "🚀", value: "Sci-Fi" },
-  ];
+  const [characters, setCharacters] = useState([
+    { emoji: "👸", value: "Cinderella" },
+    { emoji: "🕵️", value: "Sherlock Holmes" },
+    { emoji: "💑", value: "Romeo & Juliet" },
+    { emoji: "🚀", value: "Star Trek" },
+  ]);
 
   const [state, setState] = useState({
     character: "",
@@ -40,6 +40,11 @@ export default function Chat() {
         [name]: value,
       });
     }
+  };
+
+  const isNewCharacterValid = () => {
+    const { name, description, personality } = state.newCharacter;
+    return name.trim() && description.trim() && personality.trim();
   };
 
   return (
@@ -87,12 +92,17 @@ export default function Chat() {
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg disabled:opacity-50"
             disabled={isLoading || !state.character}
-            onClick={() =>
+            onClick={() => {
+              const selectedCharacter = characters.find(c => c.value === state.character);
+              const prompt = selectedCharacter.isCustom
+                ? `Generate a story with a character named ${selectedCharacter.value}. This character is described as: ${selectedCharacter.description}. Their personality is: ${selectedCharacter.personality}`
+                : `Generate a story with the main character ${state.character}`;
+              
               append({
                 role: "user",
-                content: `Generate a story with the main character ${state.character}`,
-              })
-            }
+                content: prompt,
+              });
+            }}
           >
             Generate Story
           </button>
@@ -153,10 +163,26 @@ export default function Chat() {
                 </button>
                 <button
                   onClick={() => {
-                    // Here you can handle saving the new character
-                    setState({ ...state, isModalOpen: false });
+                    if (isNewCharacterValid()) {
+                      setCharacters([
+                        ...characters,
+                        {
+                          emoji: "🎭",
+                          value: state.newCharacter.name,
+                          isCustom: true,
+                          description: state.newCharacter.description,
+                          personality: state.newCharacter.personality,
+                        },
+                      ]);
+                      setState({
+                        ...state,
+                        isModalOpen: false,
+                        newCharacter: { name: "", description: "", personality: "" },
+                      });
+                    }
                   }}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                  disabled={!isNewCharacterValid()}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50"
                 >
                   Save
                 </button>

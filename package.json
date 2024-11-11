@@ -2,5 +2,6 @@
   "dependencies": {
     "ai": "^3.4.33",
     "openai": "^4.71.1"
-  }
+  },
+  "packageManager": "yarn@4.5.1"
 }
